@@ -3,7 +3,7 @@
 #ifndef KIERO_HPP
 #define KIERO_HPP
 
-#include <stdint.h>
+#include <cstdint>
 
 #define KIERO_VERSION "1.2.12"
 
