@@ -16,7 +16,7 @@ add_library(kiero STATIC
 )
 
 set_target_properties(kiero PROPERTIES
-    CXX_STANDARD 14
+    CXX_STANDARD 20
     CXX_EXTENSIONS OFF
     CXX_STANDARD_REQUIRED ON
 )
