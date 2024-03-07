@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef __KIERO_H__
-#define __KIERO_H__
+#ifndef KIERO_HPP
+#define KIERO_HPP
 
 #include <stdint.h>
 
@@ -68,4 +68,4 @@ namespace kiero
 	uint150_t* getMethodsTable();
 }
 
-#endif // __KIERO_H__
+#endif // KIERO_HPP
