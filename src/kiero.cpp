@@ -14,8 +14,6 @@
     #define KIERO_TEXT(text) text
 #endif
 
-#define KIERO_ARRAY_SIZE(arr) ((size_t)(sizeof(arr)/sizeof(arr[0])))
-
 static kiero::RenderType g_renderType = kiero::RenderType::None;
 static uintptr_t* g_methodsTable = NULL;
 
@@ -95,25 +93,25 @@ kiero::Status kiero::init(RenderType _renderType)
             if (_renderType == RenderType::D3D9)
             {
 #if KIERO_INCLUDE_D3D9
-                return init_d3d9(window);
+                return d3d9::init(window);
 #endif
             }
             else if (_renderType == RenderType::D3D10)
             {
 #if KIERO_INCLUDE_D3D10
-                return init_d3d10(window);
+                return d3d10::init(window);
 #endif
             }
             else if (_renderType == RenderType::D3D11)
             {
 #if KIERO_INCLUDE_D3D11
-                return init_d3d11(window);
+                return d3d11::init(window);
 #endif
             }
             else if (_renderType == RenderType::D3D12)
             {
 #if KIERO_INCLUDE_D3D12
-                return init_d3d12(window);
+                return d3d12::init(window);
 #endif
             }
 
@@ -124,13 +122,13 @@ kiero::Status kiero::init(RenderType _renderType)
             if (_renderType == RenderType::OpenGL)
             {
 #if KIERO_INCLUDE_OPENGL
-                return init_opengl();
+                return opengl::init();
 #endif
             }
             else if (_renderType == RenderType::Vulkan)
             {
 #if KIERO_INCLUDE_VULKAN
-                return init_vulkan();
+                return vulkan::init();
 #endif
             }
 

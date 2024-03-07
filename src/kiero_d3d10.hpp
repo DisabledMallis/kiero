@@ -4,9 +4,9 @@
 #include <d3d10_1.h>
 #include <d3d10.h>
 
-namespace kiero
+namespace kiero::d3d10
 {
-    static Status init_d3d10(HWND window)
+    static Status init(HWND window)
     {
         HMODULE libDXGI;
         HMODULE libD3D10;

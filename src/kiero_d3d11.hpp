@@ -3,9 +3,9 @@
 #include <dxgi.h>
 #include <d3d11.h>
 
-namespace kiero
+namespace kiero::d3d11
 {
-    static Status init_d3d11(HWND window)
+    static Status init(HWND window)
     {
         HMODULE libD3D11;
         if ((libD3D11 = ::GetModuleHandle(KIERO_TEXT("d3d11.dll"))) == NULL)

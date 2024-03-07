@@ -3,9 +3,9 @@
 #include <dxgi.h>
 #include <d3d12.h>
 
-namespace kiero
+namespace kiero::d3d12
 {
-    static Status init_d3d12(HWND window)
+    static Status init(HWND window)
     {
         HMODULE libDXGI;
         HMODULE libD3D12;

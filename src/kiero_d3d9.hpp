@@ -2,9 +2,9 @@
 
 #include <d3d9.h>
 
-namespace kiero
+namespace kiero::d3d9
 {
-    static Status init_d3d9(HWND window)
+    static Status init(HWND window)
     {
         HMODULE libD3D9;
         if ((libD3D9 = ::GetModuleHandle(KIERO_TEXT("d3d9.dll"))) == NULL)
