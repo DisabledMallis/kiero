@@ -1,37 +1,37 @@
-#include "kiero.h"
+#include "kiero.hpp"
 #include <Windows.h>
 #include <assert.h>
 
 #if KIERO_INCLUDE_D3D9
-# include <d3d9.h>
+	#include <d3d9.h>
 #endif
 
 #if KIERO_INCLUDE_D3D10
-# include <dxgi.h>
-# include <d3d10_1.h>
-# include <d3d10.h>
+	#include <dxgi.h>
+	#include <d3d10_1.h>
+	#include <d3d10.h>
 #endif
 
 #if KIERO_INCLUDE_D3D11
-# include <dxgi.h>
-# include <d3d11.h>
+	#include <dxgi.h>
+	#include <d3d11.h>
 #endif
 
 #if KIERO_INCLUDE_D3D12
-# include <dxgi.h>
-# include <d3d12.h>
+	#include <dxgi.h>
+	#include <d3d12.h>
 #endif
 
 #if KIERO_INCLUDE_OPENGL
-# include <gl/GL.h>
+	#include <gl/GL.h>
 #endif
 
 #if KIERO_INCLUDE_VULKAN
-# include <vulkan/vulkan.h>
+	#include <vulkan/vulkan.h>
 #endif
 
 #if KIERO_USE_MINHOOK
-# include "minhook/include/MinHook.h"
+	#include <MinHook.h>
 #endif
 
 #ifdef _UNICODE
