@@ -7,22 +7,6 @@
 
 #define KIERO_VERSION "1.2.12"
 
-#if defined(_M_X64)	
-	#define KIERO_ARCH_X86 0
-	#define KIERO_ARCH_X64 1
-#elif defined(_M_IX86)
-	#define KIERO_ARCH_X86 1
-	#define KIERO_ARCH_X64 0
-#else
-	#error "Unsupported architecture"
-#endif
-
-#if KIERO_ARCH_X64
-typedef uint64_t uint150_t;
-#else
-typedef uint32_t uint150_t;
-#endif
-
 namespace kiero
 {
 	struct Status
@@ -65,7 +49,7 @@ namespace kiero
 	void unbind(uint16_t index);
 
 	RenderType::Enum getRenderType();
-	uint150_t* getMethodsTable();
+	uintptr_t* getMethodsTable();
 }
 
 #endif // KIERO_HPP
