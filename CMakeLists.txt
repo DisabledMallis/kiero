@@ -15,6 +15,30 @@ add_library(kiero STATIC
     src/kiero.cpp
 )
 
+set_target_properties(kiero PROPERTIES
+    CXX_STANDARD 14
+    CXX_EXTENSIONS OFF
+    CXX_STANDARD_REQUIRED ON
+)
+
+if (MSVC)
+    if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        target_compile_options(kiero PRIVATE
+            /clang:-Wall
+            /clang:-Wextra
+            /clang:-Wpedantic
+            /clang:-Wcast-align
+            /clang:-Wconversion
+            /clang:-Wsign-conversion
+            /clang:-Wold-style-cast
+            /clang:-Wimplicit-fallthrough
+        )
+    endif()
+    target_compile_options(kiero PRIVATE /WX /W4)
+else()
+    message(WARNING "Non Microsoft compatible compiler detected")
+endif()
+
 if (NOT (KIERO_INCLUDE_D3D9 OR KIERO_INCLUDE_D3D10 OR KIERO_INCLUDE_D3D11 OR KIERO_INCLUDE_D3D12 OR KIERO_INCLUDE_OPENGL OR KIERO_INCLUDE_VULKAN))
     message(FATAL_ERROR "At least one graphics API must be specified")
 endif()
@@ -43,8 +67,6 @@ if (KIERO_USE_MINHOOK)
     endif()
     target_link_libraries(kiero PRIVATE minhook)
 endif()
-
-set_target_properties(kiero PROPERTIES CXX_STANDARD 14)
 
 target_compile_definitions(kiero PUBLIC
     "$<$<BOOL:${KIERO_INCLUDE_D3D9}>:KIERO_INCLUDE_D3D9>"
