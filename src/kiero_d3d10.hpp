@@ -4,25 +4,30 @@
 #include <d3d10_1.h>
 #include <d3d10.h>
 
+#include <winrt/base.h>
+
 namespace kiero::d3d10
 {
+    using CreateDXGIFactory_t = decltype(&::CreateDXGIFactory);
+    using D3D10CreateDeviceAndSwapChain_t = decltype(&::D3D10CreateDeviceAndSwapChain);
+
     static Status init(HWND window)
     {
         HMODULE libDXGI;
         HMODULE libD3D10;
-        if ((libDXGI = ::GetModuleHandle(KIERO_TEXT("dxgi.dll"))) == NULL || (libD3D10 = ::GetModuleHandle(KIERO_TEXT("d3d10.dll"))) == NULL)
+        if ((libDXGI = ::GetModuleHandle(KIERO_TEXT("dxgi.dll"))) == nullptr || (libD3D10 = ::GetModuleHandle(KIERO_TEXT("d3d10.dll"))) == nullptr)
         {
             return Status::ModuleNotFoundError;
         }
 
-        void* CreateDXGIFactory;
-        if ((CreateDXGIFactory = ::GetProcAddress(libDXGI, "CreateDXGIFactory")) == NULL)
+        CreateDXGIFactory_t CreateDXGIFactory;
+        if ((CreateDXGIFactory = reinterpret_cast<CreateDXGIFactory_t>(::GetProcAddress(libDXGI, "CreateDXGIFactory"))) == nullptr)
         {
             return Status::UnknownError;
         }
 
-        IDXGIFactory* factory;
-        if (((long(__stdcall*)(const IID&, void**))(CreateDXGIFactory))(__uuidof(IDXGIFactory), (void**)&factory) < 0)
+        winrt::com_ptr<IDXGIFactory> factory;
+        if (CreateDXGIFactory(IID_PPV_ARGS(factory.put())) < 0)
         {
             return Status::UnknownError;
         }
@@ -33,8 +38,8 @@ namespace kiero::d3d10
             return Status::UnknownError;
         }
 
-        void* D3D10CreateDeviceAndSwapChain;
-        if ((D3D10CreateDeviceAndSwapChain = ::GetProcAddress(libD3D10, "D3D10CreateDeviceAndSwapChain")) == NULL)
+        D3D10CreateDeviceAndSwapChain_t D3D10CreateDeviceAndSwapChain;
+        if ((D3D10CreateDeviceAndSwapChain = reinterpret_cast<D3D10CreateDeviceAndSwapChain_t>(::GetProcAddress(libD3D10, "D3D10CreateDeviceAndSwapChain"))) == nullptr)
         {
             return Status::UnknownError;
         }
@@ -65,35 +70,21 @@ namespace kiero::d3d10
         swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
         swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
-        IDXGISwapChain* swapChain;
-        ID3D10Device* device;
+        winrt::com_ptr<IDXGISwapChain> swapChain;
+        winrt::com_ptr<ID3D10Device> device;
 
-        if (((long(__stdcall*)(
-            IDXGIAdapter*,
-            D3D10_DRIVER_TYPE,
-            HMODULE,
-            UINT,
-            UINT,
-            DXGI_SWAP_CHAIN_DESC*,
-            IDXGISwapChain**,
-            ID3D10Device**))(D3D10CreateDeviceAndSwapChain))(adapter, D3D10_DRIVER_TYPE_HARDWARE, NULL, 0, D3D10_SDK_VERSION, &swapChainDesc, &swapChain, &device) < 0)
+        if (D3D10CreateDeviceAndSwapChain(adapter, D3D10_DRIVER_TYPE_HARDWARE, nullptr, 0, D3D10_SDK_VERSION, &swapChainDesc, swapChain.put(), device.put()) < 0)
         {
             return Status::UnknownError;
         }
 
-        g_methodsTable = (uintptr_t*)::calloc(116, sizeof(uintptr_t));
-        ::memcpy(g_methodsTable, *(uintptr_t**)swapChain, 18 * sizeof(uintptr_t));
-        ::memcpy(g_methodsTable + 18, *(uintptr_t**)device, 98 * sizeof(uintptr_t));
+        g_methodsTable = static_cast<uintptr_t*>(::calloc(116, sizeof(uintptr_t)));
+        ::memcpy(g_methodsTable, *reinterpret_cast<uintptr_t**>(swapChain.get()), 18 * sizeof(uintptr_t));
+        ::memcpy(g_methodsTable + 18, *reinterpret_cast<uintptr_t**>(device.get()), 98 * sizeof(uintptr_t));
 
 #if KIERO_USE_MINHOOK
         MH_Initialize();
 #endif
-
-        swapChain->Release();
-        swapChain = NULL;
-
-        device->Release();
-        device = NULL;
 
         g_renderType = RenderType::D3D10;
 

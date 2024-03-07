@@ -197,7 +197,7 @@ kiero::Status kiero::bind(uint16_t _index, void** _original, void* _function)
     if (g_renderType != RenderType::None)
     {
 #if KIERO_USE_MINHOOK
-        void* target = (void*)g_methodsTable[_index];
+        const auto target = reinterpret_cast<void*>(g_methodsTable[_index]);
         if (MH_CreateHook(target, _function, _original) != MH_OK || MH_EnableHook(target) != MH_OK)
         {
             return Status::UnknownError;
@@ -215,7 +215,7 @@ void kiero::unbind(uint16_t _index)
     if (g_renderType != RenderType::None)
     {
 #if KIERO_USE_MINHOOK
-        MH_DisableHook((void*)g_methodsTable[_index]);
+        MH_DisableHook(reinterpret_cast<void*>(g_methodsTable[_index]));
 #endif
     }
 }

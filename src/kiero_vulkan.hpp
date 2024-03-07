@@ -29,16 +29,16 @@ namespace kiero::vulkan
     static Status init()
     {
         HMODULE libVulkan;
-        if ((libVulkan = GetModuleHandle(KIERO_TEXT("vulkan-1.dll"))) == NULL)
+        if ((libVulkan = GetModuleHandle(KIERO_TEXT("vulkan-1.dll"))) == nullptr)
         {
             return Status::ModuleNotFoundError;
         }
 
-        g_methodsTable = (uintptr_t*)::calloc(methodsNames.size(), sizeof(uintptr_t));
+        g_methodsTable = static_cast<uintptr_t*>(::calloc(methodsNames.size(), sizeof(uintptr_t)));
 
         for (size_t i = 0; i < methodsNames.size(); i++)
         {
-            g_methodsTable[i] = (uintptr_t)::GetProcAddress(libVulkan, methodsNames[i]);
+            g_methodsTable[i] = reinterpret_cast<uintptr_t>(::GetProcAddress(libVulkan, methodsNames[i]));
         }
 
 #if KIERO_USE_MINHOOK

@@ -40,16 +40,16 @@ namespace kiero::opengl
     static Status init()
     {
         HMODULE libOpenGL32;
-        if ((libOpenGL32 = ::GetModuleHandle(KIERO_TEXT("opengl32.dll"))) == NULL)
+        if ((libOpenGL32 = ::GetModuleHandle(KIERO_TEXT("opengl32.dll"))) == nullptr)
         {
             return Status::ModuleNotFoundError;
         }
 
-        g_methodsTable = (uintptr_t*)::calloc(methodsNames.size(), sizeof(uintptr_t));
+        g_methodsTable = static_cast<uintptr_t*>(::calloc(methodsNames.size(), sizeof(uintptr_t)));
 
         for (size_t i = 0; i < methodsNames.size(); i++)
         {
-            g_methodsTable[i] = (uintptr_t)::GetProcAddress(libOpenGL32, methodsNames[i]);
+            g_methodsTable[i] = reinterpret_cast<uintptr_t>(::GetProcAddress(libOpenGL32, methodsNames[i]));
         }
 
 #if KIERO_USE_MINHOOK

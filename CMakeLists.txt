@@ -17,7 +17,6 @@ add_library(kiero STATIC
 
 set_target_properties(kiero PROPERTIES
     CXX_STANDARD 20
-    CXX_EXTENSIONS OFF
     CXX_STANDARD_REQUIRED ON
 )
 
@@ -26,7 +25,6 @@ if (MSVC)
         target_compile_options(kiero PRIVATE
             /clang:-Wall
             /clang:-Wextra
-            /clang:-Wpedantic
             /clang:-Wcast-align
             /clang:-Wconversion
             /clang:-Wsign-conversion
