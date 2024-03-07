@@ -15,7 +15,7 @@
 #endif
 
 static kiero::RenderType g_renderType = kiero::RenderType::None;
-static uintptr_t* g_methodsTable = NULL;
+static uintptr_t* g_methodsTable = nullptr;
 
 #if KIERO_INCLUDE_D3D9
     #include "kiero_d3d9.hpp"
@@ -55,123 +55,140 @@ namespace
     };
 }
 
-kiero::Status kiero::init(RenderType _renderType)
+namespace kiero
+{
+    static kiero::Status initRenderType(kiero::RenderType renderType);
+}
+
+static kiero::Status kiero::initRenderType(kiero::RenderType renderType)
+{
+    if (renderType >= RenderType::D3D9 && renderType <= RenderType::D3D12)
+    {
+        WNDCLASSEX windowClass;
+        windowClass.cbSize = sizeof(WNDCLASSEX);
+        windowClass.style = CS_HREDRAW | CS_VREDRAW;
+        windowClass.lpfnWndProc = DefWindowProc;
+        windowClass.cbClsExtra = 0;
+        windowClass.cbWndExtra = 0;
+        windowClass.hInstance = GetModuleHandle(nullptr);
+        windowClass.hIcon = nullptr;
+        windowClass.hCursor = nullptr;
+        windowClass.hbrBackground = nullptr;
+        windowClass.lpszMenuName = nullptr;
+        windowClass.lpszClassName = KIERO_TEXT("Kiero");
+        windowClass.hIconSm = nullptr;
+
+        ::RegisterClassEx(&windowClass);
+        Defer d1{[&] {
+            ::UnregisterClass(windowClass.lpszClassName, windowClass.hInstance);
+        }};
+
+        HWND window = ::CreateWindow(windowClass.lpszClassName, KIERO_TEXT("Kiero DirectX Window"), WS_OVERLAPPEDWINDOW, 0, 0, 100, 100, nullptr, nullptr, windowClass.hInstance, nullptr);
+        Defer d2{[&] {
+            ::DestroyWindow(window);
+        }};
+
+#if KIERO_INCLUDE_D3D9
+        if (renderType == RenderType::D3D9)
+        {
+            return d3d9::init(window);
+        }
+#endif
+
+#if KIERO_INCLUDE_D3D10
+        if (renderType == RenderType::D3D10)
+        {
+            return d3d10::init(window);
+        }
+#endif
+
+#if KIERO_INCLUDE_D3D11
+        if (renderType == RenderType::D3D11)
+        {
+            return d3d11::init(window);
+        }
+#endif
+
+#if KIERO_INCLUDE_D3D12
+        if (renderType == RenderType::D3D12)
+        {
+            return d3d12::init(window);
+        }
+#endif
+
+        return Status::NotSupportedError;
+    }
+
+#if KIERO_INCLUDE_OPENGL
+    if (renderType == RenderType::OpenGL)
+    {
+        return opengl::init();
+    }
+#endif
+
+#if KIERO_INCLUDE_VULKAN
+    if (renderType == RenderType::Vulkan)
+    {
+        return vulkan::init();
+    }
+#endif
+
+    return Status::NotSupportedError;
+}
+
+kiero::Status kiero::init(RenderType renderType)
 {
     if (g_renderType != RenderType::None)
     {
         return Status::AlreadyInitializedError;
     }
 
-    if (_renderType != RenderType::None)
+    if (renderType == RenderType::None)
     {
-        if (_renderType >= RenderType::D3D9 && _renderType <= RenderType::D3D12)
+        return Status::Success;
+    }
+
+    if (renderType == RenderType::Auto)
+    {
+        if (::GetModuleHandle(KIERO_TEXT("d3d9.dll")) != nullptr)
         {
-            WNDCLASSEX windowClass;
-            windowClass.cbSize = sizeof(WNDCLASSEX);
-            windowClass.style = CS_HREDRAW | CS_VREDRAW;
-            windowClass.lpfnWndProc = DefWindowProc;
-            windowClass.cbClsExtra = 0;
-            windowClass.cbWndExtra = 0;
-            windowClass.hInstance = GetModuleHandle(NULL);
-            windowClass.hIcon = NULL;
-            windowClass.hCursor = NULL;
-            windowClass.hbrBackground = NULL;
-            windowClass.lpszMenuName = NULL;
-            windowClass.lpszClassName = KIERO_TEXT("Kiero");
-            windowClass.hIconSm = NULL;
-
-            ::RegisterClassEx(&windowClass);
-            Defer d1{[&] {
-                ::UnregisterClass(windowClass.lpszClassName, windowClass.hInstance);
-            }};
-
-            HWND window = ::CreateWindow(windowClass.lpszClassName, KIERO_TEXT("Kiero DirectX Window"), WS_OVERLAPPEDWINDOW, 0, 0, 100, 100, NULL, NULL, windowClass.hInstance, NULL);
-            Defer d2{[&] {
-                ::DestroyWindow(window);
-            }};
-
-            if (_renderType == RenderType::D3D9)
-            {
-#if KIERO_INCLUDE_D3D9
-                return d3d9::init(window);
-#endif
-            }
-            else if (_renderType == RenderType::D3D10)
-            {
-#if KIERO_INCLUDE_D3D10
-                return d3d10::init(window);
-#endif
-            }
-            else if (_renderType == RenderType::D3D11)
-            {
-#if KIERO_INCLUDE_D3D11
-                return d3d11::init(window);
-#endif
-            }
-            else if (_renderType == RenderType::D3D12)
-            {
-#if KIERO_INCLUDE_D3D12
-                return d3d12::init(window);
-#endif
-            }
-
-            return Status::NotSupportedError;
+            renderType = RenderType::D3D9;
         }
-        else if (_renderType != RenderType::Auto)
+        else if (::GetModuleHandle(KIERO_TEXT("d3d10.dll")) != nullptr)
         {
-            if (_renderType == RenderType::OpenGL)
-            {
-#if KIERO_INCLUDE_OPENGL
-                return opengl::init();
-#endif
-            }
-            else if (_renderType == RenderType::Vulkan)
-            {
-#if KIERO_INCLUDE_VULKAN
-                return vulkan::init();
-#endif
-            }
-
-            return Status::NotSupportedError;
+            renderType = RenderType::D3D10;
+        }
+        else if (::GetModuleHandle(KIERO_TEXT("d3d11.dll")) != nullptr)
+        {
+            renderType = RenderType::D3D11;
+        }
+        else if (::GetModuleHandle(KIERO_TEXT("d3d12.dll")) != nullptr)
+        {
+            renderType = RenderType::D3D12;
+        }
+        else if (::GetModuleHandle(KIERO_TEXT("opengl32.dll")) != nullptr)
+        {
+            renderType = RenderType::OpenGL;
+        }
+        else if (::GetModuleHandle(KIERO_TEXT("vulkan-1.dll")) != nullptr)
+        {
+            renderType = RenderType::Vulkan;
         }
         else
         {
-            RenderType type = RenderType::None;
-
-            if (::GetModuleHandle(KIERO_TEXT("d3d9.dll")) != NULL)
-            {
-                type = RenderType::D3D9;
-            }
-            else if (::GetModuleHandle(KIERO_TEXT("d3d10.dll")) != NULL)
-            {
-                type = RenderType::D3D10;
-            }
-            else if (::GetModuleHandle(KIERO_TEXT("d3d11.dll")) != NULL)
-            {
-                type = RenderType::D3D11;
-            }
-            else if (::GetModuleHandle(KIERO_TEXT("d3d12.dll")) != NULL)
-            {
-                type = RenderType::D3D12;
-            }
-            else if (::GetModuleHandle(KIERO_TEXT("opengl32.dll")) != NULL)
-            {
-                type = RenderType::OpenGL;
-            }
-            else if (::GetModuleHandle(KIERO_TEXT("vulkan-1.dll")) != NULL)
-            {
-                type = RenderType::Vulkan;
-            }
-            else
-            {
-                return Status::NotSupportedError;
-            }
-
-            return init(type);
+            return Status::NotSupportedError;
         }
     }
 
-    return Status::Success;
+    const auto status = initRenderType(renderType);
+    if (status == Status::Success)
+    {
+#if KIERO_USE_MINHOOK
+        MH_Initialize();
+#endif
+        g_renderType = renderType;
+    }
+    return status;
 }
 
 void kiero::shutdown()
@@ -183,7 +200,7 @@ void kiero::shutdown()
 #endif
 
         ::free(g_methodsTable);
-        g_methodsTable = NULL;
+        g_methodsTable = nullptr;
         g_renderType = RenderType::None;
     }
 }

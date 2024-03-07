@@ -52,12 +52,6 @@ namespace kiero::opengl
             g_methodsTable[i] = reinterpret_cast<uintptr_t>(::GetProcAddress(libOpenGL32, methodsNames[i]));
         }
 
-#if KIERO_USE_MINHOOK
-        MH_Initialize();
-#endif
-
-        g_renderType = RenderType::OpenGL;
-
         return Status::Success;
     }
 }

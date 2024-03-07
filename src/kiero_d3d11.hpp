@@ -66,12 +66,6 @@ namespace kiero::d3d11
         ::memcpy(g_methodsTable + 18, *reinterpret_cast<uintptr_t**>(device.get()), 43 * sizeof(uintptr_t));
         ::memcpy(g_methodsTable + 18 + 43, *reinterpret_cast<uintptr_t**>(context.get()), 144 * sizeof(uintptr_t));
 
-#if KIERO_USE_MINHOOK
-        MH_Initialize();
-#endif
-
-        g_renderType = RenderType::D3D11;
-
         return Status::Success;
     }
 }

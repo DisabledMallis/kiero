@@ -53,12 +53,6 @@ namespace kiero::d3d9
         g_methodsTable = static_cast<uintptr_t*>(::calloc(119, sizeof(uintptr_t)));
         ::memcpy(g_methodsTable, *reinterpret_cast<uintptr_t**>(device.get()), 119 * sizeof(uintptr_t));
 
-#if KIERO_USE_MINHOOK
-        MH_Initialize();
-#endif
-
-        g_renderType = RenderType::D3D9;
-
         return Status::Success;
     }
 }

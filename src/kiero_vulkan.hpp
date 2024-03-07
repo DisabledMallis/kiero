@@ -41,12 +41,6 @@ namespace kiero::vulkan
             g_methodsTable[i] = reinterpret_cast<uintptr_t>(::GetProcAddress(libVulkan, methodsNames[i]));
         }
 
-#if KIERO_USE_MINHOOK
-        MH_Initialize();
-#endif
-
-        g_renderType = RenderType::Vulkan;
-
         return Status::Success;
     }
 }

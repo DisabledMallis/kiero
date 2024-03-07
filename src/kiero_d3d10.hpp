@@ -82,12 +82,6 @@ namespace kiero::d3d10
         ::memcpy(g_methodsTable, *reinterpret_cast<uintptr_t**>(swapChain.get()), 18 * sizeof(uintptr_t));
         ::memcpy(g_methodsTable + 18, *reinterpret_cast<uintptr_t**>(device.get()), 98 * sizeof(uintptr_t));
 
-#if KIERO_USE_MINHOOK
-        MH_Initialize();
-#endif
-
-        g_renderType = RenderType::D3D10;
-
         return Status::Success;
     }
 }

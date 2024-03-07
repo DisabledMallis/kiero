@@ -112,12 +112,6 @@ namespace kiero::d3d12
         ::memcpy(g_methodsTable + 44 + 19 + 9, *reinterpret_cast<uintptr_t**>(commandList.get()), 60 * sizeof(uintptr_t));
         ::memcpy(g_methodsTable + 44 + 19 + 9 + 60, *reinterpret_cast<uintptr_t**>(swapChain.get()), 18 * sizeof(uintptr_t));
 
-#if KIERO_USE_MINHOOK
-    MH_Initialize();
-#endif
-
-        g_renderType = RenderType::D3D12;
-
         return Status::Success;
     }
 }
