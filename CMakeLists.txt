@@ -41,14 +41,32 @@ if (NOT (KIERO_INCLUDE_D3D9 OR KIERO_INCLUDE_D3D10 OR KIERO_INCLUDE_D3D11 OR KIE
     message(FATAL_ERROR "At least one graphics API must be specified")
 endif()
 
+if (KIERO_INCLUDE_D3D9)
+    target_compile_definitions(kiero PRIVATE KIERO_INCLUDE_D3D9)
+endif()
+
+if (KIERO_INCLUDE_D3D10)
+    target_compile_definitions(kiero PRIVATE KIERO_INCLUDE_D3D10)
+endif()
+
+if (KIERO_INCLUDE_D3D11)
+    target_compile_definitions(kiero PRIVATE KIERO_INCLUDE_D3D11)
+endif()
+
+if (KIERO_INCLUDE_D3D12)
+    target_compile_definitions(kiero PRIVATE KIERO_INCLUDE_D3D12)
+endif()
+
 if (KIERO_INCLUDE_OPENGL)
     find_package(OpenGL REQUIRED)
     target_link_libraries(kiero PRIVATE OpenGL::GL)
+    target_compile_definitions(kiero PRIVATE KIERO_INCLUDE_OPENGL)
 endif()
 
 if (KIERO_INCLUDE_VULKAN)
     find_package(Vulkan REQUIRED)
     target_link_libraries(kiero PRIVATE Vulkan::Vulkan)
+    target_compile_definitions(kiero PRIVATE KIERO_INCLUDE_VULKAN)
 endif()
 
 if (KIERO_USE_MINHOOK)
@@ -64,17 +82,8 @@ if (KIERO_USE_MINHOOK)
         message(FATAL_ERROR "minhook target not present")
     endif()
     target_link_libraries(kiero PRIVATE minhook)
+    target_compile_definitions(kiero PRIVATE KIERO_USE_MINHOOK)
 endif()
-
-target_compile_definitions(kiero PUBLIC
-    "$<$<BOOL:${KIERO_INCLUDE_D3D9}>:KIERO_INCLUDE_D3D9>"
-    "$<$<BOOL:${KIERO_INCLUDE_D3D10}>:KIERO_INCLUDE_D3D10>"
-    "$<$<BOOL:${KIERO_INCLUDE_D3D11}>:KIERO_INCLUDE_D3D11>"
-    "$<$<BOOL:${KIERO_INCLUDE_D3D12}>:KIERO_INCLUDE_D3D12>"
-    "$<$<BOOL:${KIERO_INCLUDE_OPENGL}>:KIERO_INCLUDE_OPENGL>"
-    "$<$<BOOL:${KIERO_INCLUDE_VULKAN}>:KIERO_INCLUDE_VULKAN>"
-    "$<$<BOOL:${KIERO_USE_MINHOOK}>:KIERO_USE_MINHOOK>"
-)
 
 target_include_directories(kiero PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>

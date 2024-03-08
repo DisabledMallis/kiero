@@ -1,140 +1,52 @@
 #include "kiero.hpp"
 
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+
 #include <Windows.h>
+#include <tchar.h>
 #include <cassert>
-#include <concepts>
 
-#if KIERO_USE_MINHOOK
-    #include <MinHook.h>
-#endif
-
-#ifdef _UNICODE
-    #define KIERO_TEXT(text) L##text
-#else
-    #define KIERO_TEXT(text) text
-#endif
+namespace kiero
+{
+    template<RenderType type> requires (type != RenderType::Auto && type != RenderType::None)
+    static Status initRenderType()
+    {
+        return Status::NotSupportedError;
+    }
+}
 
 static kiero::RenderType g_renderType = kiero::RenderType::None;
 static uintptr_t* g_methodsTable = nullptr;
 
-#if KIERO_INCLUDE_D3D9
-    #include "kiero_d3d9.hpp"
+#ifdef KIERO_INCLUDE_D3D9
+#include "kiero_d3d9.hpp"
 #endif
 
-#if KIERO_INCLUDE_D3D10
-    #include "kiero_d3d10.hpp"
+#ifdef KIERO_INCLUDE_D3D10
+#include "kiero_d3d10.hpp"
 #endif
 
-#if KIERO_INCLUDE_D3D11
-    #include "kiero_d3d11.hpp"
+#ifdef KIERO_INCLUDE_D3D11
+#include "kiero_d3d11.hpp"
 #endif
 
-#if KIERO_INCLUDE_D3D12
-    #include "kiero_d3d12.hpp"
+#ifdef KIERO_INCLUDE_D3D12
+#include "kiero_d3d12.hpp"
 #endif
 
-#if KIERO_INCLUDE_OPENGL
-    #include "kiero_opengl.hpp"
+#ifdef KIERO_INCLUDE_OPENGL
+#include "kiero_opengl.hpp"
 #endif
 
-#if KIERO_INCLUDE_VULKAN
-    #include "kiero_vulkan.hpp"
+#ifdef KIERO_INCLUDE_VULKAN
+#include "kiero_vulkan.hpp"
 #endif
 
-namespace
-{
-    template<std::invocable Fn>
-    struct Defer
-    {
-        Fn impl{};
-
-        ~Defer()
-        {
-            impl();
-        }
-    };
-}
-
-namespace kiero
-{
-    static kiero::Status initRenderType(kiero::RenderType renderType);
-}
-
-static kiero::Status kiero::initRenderType(kiero::RenderType renderType)
-{
-    if (renderType >= RenderType::D3D9 && renderType <= RenderType::D3D12)
-    {
-        WNDCLASSEX windowClass;
-        windowClass.cbSize = sizeof(WNDCLASSEX);
-        windowClass.style = CS_HREDRAW | CS_VREDRAW;
-        windowClass.lpfnWndProc = DefWindowProc;
-        windowClass.cbClsExtra = 0;
-        windowClass.cbWndExtra = 0;
-        windowClass.hInstance = GetModuleHandle(nullptr);
-        windowClass.hIcon = nullptr;
-        windowClass.hCursor = nullptr;
-        windowClass.hbrBackground = nullptr;
-        windowClass.lpszMenuName = nullptr;
-        windowClass.lpszClassName = KIERO_TEXT("Kiero");
-        windowClass.hIconSm = nullptr;
-
-        ::RegisterClassEx(&windowClass);
-        Defer d1{[&] {
-            ::UnregisterClass(windowClass.lpszClassName, windowClass.hInstance);
-        }};
-
-        HWND window = ::CreateWindow(windowClass.lpszClassName, KIERO_TEXT("Kiero DirectX Window"), WS_OVERLAPPEDWINDOW, 0, 0, 100, 100, nullptr, nullptr, windowClass.hInstance, nullptr);
-        Defer d2{[&] {
-            ::DestroyWindow(window);
-        }};
-
-#if KIERO_INCLUDE_D3D9
-        if (renderType == RenderType::D3D9)
-        {
-            return d3d9::init(window);
-        }
+#ifdef KIERO_USE_MINHOOK
+#include <MinHook.h>
 #endif
-
-#if KIERO_INCLUDE_D3D10
-        if (renderType == RenderType::D3D10)
-        {
-            return d3d10::init(window);
-        }
-#endif
-
-#if KIERO_INCLUDE_D3D11
-        if (renderType == RenderType::D3D11)
-        {
-            return d3d11::init(window);
-        }
-#endif
-
-#if KIERO_INCLUDE_D3D12
-        if (renderType == RenderType::D3D12)
-        {
-            return d3d12::init(window);
-        }
-#endif
-
-        return Status::NotSupportedError;
-    }
-
-#if KIERO_INCLUDE_OPENGL
-    if (renderType == RenderType::OpenGL)
-    {
-        return opengl::init();
-    }
-#endif
-
-#if KIERO_INCLUDE_VULKAN
-    if (renderType == RenderType::Vulkan)
-    {
-        return vulkan::init();
-    }
-#endif
-
-    return Status::NotSupportedError;
-}
 
 kiero::Status kiero::init(RenderType renderType)
 {
@@ -150,27 +62,27 @@ kiero::Status kiero::init(RenderType renderType)
 
     if (renderType == RenderType::Auto)
     {
-        if (::GetModuleHandle(KIERO_TEXT("d3d9.dll")) != nullptr)
+        if (::GetModuleHandle(_T("d3d9.dll")) != nullptr)
         {
             renderType = RenderType::D3D9;
         }
-        else if (::GetModuleHandle(KIERO_TEXT("d3d10.dll")) != nullptr)
+        else if (::GetModuleHandle(_T("d3d10.dll")) != nullptr)
         {
             renderType = RenderType::D3D10;
         }
-        else if (::GetModuleHandle(KIERO_TEXT("d3d11.dll")) != nullptr)
+        else if (::GetModuleHandle(_T("d3d11.dll")) != nullptr)
         {
             renderType = RenderType::D3D11;
         }
-        else if (::GetModuleHandle(KIERO_TEXT("d3d12.dll")) != nullptr)
+        else if (::GetModuleHandle(_T("d3d12.dll")) != nullptr)
         {
             renderType = RenderType::D3D12;
         }
-        else if (::GetModuleHandle(KIERO_TEXT("opengl32.dll")) != nullptr)
+        else if (::GetModuleHandle(_T("opengl32.dll")) != nullptr)
         {
             renderType = RenderType::OpenGL;
         }
-        else if (::GetModuleHandle(KIERO_TEXT("vulkan-1.dll")) != nullptr)
+        else if (::GetModuleHandle(_T("vulkan-1.dll")) != nullptr)
         {
             renderType = RenderType::Vulkan;
         }
@@ -180,10 +92,23 @@ kiero::Status kiero::init(RenderType renderType)
         }
     }
 
-    const auto status = initRenderType(renderType);
+    const auto status = [renderType]
+    {
+        switch (renderType) {
+            case RenderType::D3D9: return initRenderType<RenderType::D3D9>();
+            case RenderType::D3D10: return initRenderType<RenderType::D3D10>();
+            case RenderType::D3D11: return initRenderType<RenderType::D3D11>();
+            case RenderType::D3D12: return initRenderType<RenderType::D3D12>();
+            case RenderType::OpenGL: return initRenderType<RenderType::OpenGL>();
+            case RenderType::Vulkan: return initRenderType<RenderType::Vulkan>();
+            case RenderType::None: [[fallthrough]];
+            case RenderType::Auto: break;
+        }
+        return Status::UnknownError;
+    }();
     if (status == Status::Success)
     {
-#if KIERO_USE_MINHOOK
+#ifdef KIERO_USE_MINHOOK
         MH_Initialize();
 #endif
         g_renderType = renderType;
@@ -195,7 +120,7 @@ void kiero::shutdown()
 {
     if (g_renderType != RenderType::None)
     {
-#if KIERO_USE_MINHOOK
+#ifdef KIERO_USE_MINHOOK
         MH_DisableHook(MH_ALL_HOOKS);
 #endif
 
@@ -213,7 +138,7 @@ kiero::Status kiero::bind(uint16_t _index, void** _original, void* _function)
 
     if (g_renderType != RenderType::None)
     {
-#if KIERO_USE_MINHOOK
+#ifdef KIERO_USE_MINHOOK
         const auto target = reinterpret_cast<void*>(g_methodsTable[_index]);
         if (MH_CreateHook(target, _function, _original) != MH_OK || MH_EnableHook(target) != MH_OK)
         {
@@ -231,7 +156,7 @@ void kiero::unbind(uint16_t _index)
 {
     if (g_renderType != RenderType::None)
     {
-#if KIERO_USE_MINHOOK
+#ifdef KIERO_USE_MINHOOK
         MH_DisableHook(reinterpret_cast<void*>(g_methodsTable[_index]));
 #endif
     }

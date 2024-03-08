@@ -1,27 +1,28 @@
 #pragma once
 
-#include <dxgi.h>
+#include "kiero_d3dcommon.hpp"
+
 #include <d3d10_1.h>
 #include <d3d10.h>
-
 #include <winrt/base.h>
 
-namespace kiero::d3d10
+namespace kiero
 {
-    using CreateDXGIFactory_t = decltype(&::CreateDXGIFactory);
-    using D3D10CreateDeviceAndSwapChain_t = decltype(&::D3D10CreateDeviceAndSwapChain);
-
-    static Status init(HWND window)
+    template<>
+    inline Status initRenderType<RenderType::D3D10>()
     {
+        using PFN_CREATE_DXGI_FACTORY = decltype(&::CreateDXGIFactory);
+        using PFN_D3D10_CREATE_DEVICE_AND_SWAP_CHAIN = decltype(&::D3D10CreateDeviceAndSwapChain);
+
         HMODULE libDXGI;
         HMODULE libD3D10;
-        if ((libDXGI = ::GetModuleHandle(KIERO_TEXT("dxgi.dll"))) == nullptr || (libD3D10 = ::GetModuleHandle(KIERO_TEXT("d3d10.dll"))) == nullptr)
+        if ((libDXGI = ::GetModuleHandle(_T("dxgi.dll"))) == nullptr || (libD3D10 = ::GetModuleHandle(_T("d3d10.dll"))) == nullptr)
         {
             return Status::ModuleNotFoundError;
         }
 
-        CreateDXGIFactory_t CreateDXGIFactory;
-        if ((CreateDXGIFactory = reinterpret_cast<CreateDXGIFactory_t>(::GetProcAddress(libDXGI, "CreateDXGIFactory"))) == nullptr)
+        const auto CreateDXGIFactory = reinterpret_cast<PFN_CREATE_DXGI_FACTORY>(::GetProcAddress(libDXGI, "CreateDXGIFactory"));
+        if (CreateDXGIFactory == nullptr)
         {
             return Status::UnknownError;
         }
@@ -38,37 +39,14 @@ namespace kiero::d3d10
             return Status::UnknownError;
         }
 
-        D3D10CreateDeviceAndSwapChain_t D3D10CreateDeviceAndSwapChain;
-        if ((D3D10CreateDeviceAndSwapChain = reinterpret_cast<D3D10CreateDeviceAndSwapChain_t>(::GetProcAddress(libD3D10, "D3D10CreateDeviceAndSwapChain"))) == nullptr)
+        const auto D3D10CreateDeviceAndSwapChain = reinterpret_cast<PFN_D3D10_CREATE_DEVICE_AND_SWAP_CHAIN>(::GetProcAddress(libD3D10, "D3D10CreateDeviceAndSwapChain"));
+        if (D3D10CreateDeviceAndSwapChain == nullptr)
         {
             return Status::UnknownError;
         }
 
-        DXGI_RATIONAL refreshRate;
-        refreshRate.Numerator = 60;
-        refreshRate.Denominator = 1;
-
-        DXGI_MODE_DESC bufferDesc;
-        bufferDesc.Width = 100;
-        bufferDesc.Height = 100;
-        bufferDesc.RefreshRate = refreshRate;
-        bufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-        bufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-        bufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-
-        DXGI_SAMPLE_DESC sampleDesc;
-        sampleDesc.Count = 1;
-        sampleDesc.Quality = 0;
-
-        DXGI_SWAP_CHAIN_DESC swapChainDesc;
-        swapChainDesc.BufferDesc = bufferDesc;
-        swapChainDesc.SampleDesc = sampleDesc;
-        swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-        swapChainDesc.BufferCount = 1;
-        swapChainDesc.OutputWindow = window;
-        swapChainDesc.Windowed = 1;
-        swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-        swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+        const auto window = d3d::createTempWindow();
+        DXGI_SWAP_CHAIN_DESC swapChainDesc = d3d::createSwapChainDesc(static_cast<HWND>(window));
 
         winrt::com_ptr<IDXGISwapChain> swapChain;
         winrt::com_ptr<ID3D10Device> device;
