@@ -9,11 +9,12 @@ option(KIERO_INCLUDE_VULKAN "Enable support for Vulkan" OFF)
 option(KIERO_USE_MINHOOK "Enables \"kiero::bind\" as a wrapper around MinHook" OFF)
 option(KIERO_MINHOOK_EXTERNAL "Use an externally provided MinHook instead of the bundled" OFF)
 
-project(kiero)
+project(kiero VERSION 1.2.12)
 
 add_library(kiero STATIC
     src/kiero.cpp
 )
+target_compile_definitions(kiero PUBLIC KIERO_VERSION=${PROJECT_VERSION})
 
 set_target_properties(kiero PROPERTIES
     CXX_STANDARD 20

@@ -5,8 +5,6 @@
 
 #include <cstdint>
 
-#define KIERO_VERSION "1.2.12"
-
 namespace kiero
 {
     enum class Status
