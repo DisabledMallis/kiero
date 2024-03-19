@@ -21,23 +21,23 @@ static kiero::RenderType g_renderType = kiero::RenderType::None;
 static uintptr_t* g_methodsTable = nullptr;
 
 #ifdef KIERO_INCLUDE_D3D9
-#include "kiero_d3d9.hpp"
+#include "kiero_impl_d3d9.hpp"
 #endif
 
 #ifdef KIERO_INCLUDE_D3D10
-#include "kiero_d3d10.hpp"
+#include "kiero_impl_d3d10.hpp"
 #endif
 
 #ifdef KIERO_INCLUDE_D3D11
-#include "kiero_d3d11.hpp"
+#include "kiero_impl_d3d11.hpp"
 #endif
 
 #ifdef KIERO_INCLUDE_D3D12
-#include "kiero_d3d12.hpp"
+#include "kiero_impl_d3d12.hpp"
 #endif
 
 #ifdef KIERO_INCLUDE_OPENGL
-#include "kiero_opengl.hpp"
+#include "kiero_impl_opengl.hpp"
 #endif
 
 #ifdef KIERO_INCLUDE_VULKAN
